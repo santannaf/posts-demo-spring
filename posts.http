@@ -1,2 +1,9 @@
 
 GET http://localhost:30001/posts
+###
+
+< {%
+    request.variables.set("userId", "1")
+%}
+GET http://localhost:30001/posts/user/{{userId}}
+###

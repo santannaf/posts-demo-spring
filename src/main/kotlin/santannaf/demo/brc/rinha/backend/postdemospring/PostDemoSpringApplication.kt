@@ -8,6 +8,7 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import org.springframework.jdbc.core.simple.JdbcClient
 import org.springframework.stereotype.Service
 import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 import org.springframework.web.client.RestClient
@@ -33,10 +34,19 @@ class PostsController(
         log.info("fetch posts successfully: ${posts.size}")
         return posts
     }
+
+    @GetMapping(path = ["/user/{userId}"])
+    fun getPostsByUserId(@PathVariable userId: Long): List<Post> {
+        log.info("get all posts by user id: $userId")
+        val posts = service.getPostsByUserId(userId)
+        log.info("fetch posts successfully: ${posts.size} - for user id: $userId")
+        return posts
+    }
 }
 
 interface PostsService {
     fun getPosts(): List<Post>
+    fun getPostsByUserId(userId: Long): List<Post>
 }
 
 @Service
@@ -74,16 +84,6 @@ class PostsServiceImpl(
 
     private fun insertBatch(posts: List<Post>): IntArray {
         if (posts.isEmpty()) return intArrayOf()
-//        if (posts.isEmpty()) return 0
-
-//        val paramList: List<Map<String, Any>> = posts.map { post ->
-//            mapOf(
-//                "id" to post.id,
-//                "title" to post.title,
-//                "userId" to post.userId,
-//                "body" to post.body
-//            )
-//        }
 
         val batchValues: Array<Map<String, Any>> = posts.map { post ->
             mapOf(
@@ -95,10 +95,6 @@ class PostsServiceImpl(
         }.toTypedArray()
 
         return namedParameterJdbcTemplate.batchUpdate(insertSql, batchValues)
-
-//        return jdbcClient.sql(insertSql)
-//            .params(paramList)   // lista de maps para batch
-//            .update()            // executa como batch
     }
 
     override fun getPosts(): List<Post> {
@@ -111,6 +107,18 @@ class PostsServiceImpl(
         insertBatch(posts)
 
         return posts
+    }
+
+    override fun getPostsByUserId(userId: Long): List<Post> {
+        val query = """
+            select id, title, user_id as userId, body from posts where user_id = :userId
+        """.trimIndent()
+
+        return jdbcClient.sql(query)
+            .param("userId", userId)
+            .query(Post::class.java)
+            .list()
+            .filterNotNull()
     }
 }
 
