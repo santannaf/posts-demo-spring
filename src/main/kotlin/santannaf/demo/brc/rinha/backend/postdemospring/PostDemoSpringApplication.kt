@@ -36,17 +36,21 @@ class PostsController(
     }
 
     @GetMapping(path = ["/user/{userId}"])
-    fun getPostsByUserId(@PathVariable userId: Long): List<Post> {
+    fun getPostsByUserId(@PathVariable userId: Long): Any {
+
         log.info("get all posts by user id: $userId")
-        val posts = service.getPostsByUserId(userId)
-        log.info("fetch posts successfully: ${posts.size} - for user id: $userId")
-        return posts
+        return service.ping()
+
+//        val posts = service.getPostsByUserId(userId)
+//        log.info("fetch posts successfully: ${posts.size} - for user id: $userId")
+//        return posts
     }
 }
 
 interface PostsService {
     fun getPosts(): List<Post>
     fun getPostsByUserId(userId: Long): List<Post>
+    fun ping(): Int
 }
 
 @Service
@@ -109,13 +113,20 @@ class PostsServiceImpl(
         return posts
     }
 
+    override fun ping(): Int {
+
+        return jdbcClient.sql("select 1 from dual")
+            .query(Int::class.java)
+            .single()
+    }
+
     override fun getPostsByUserId(userId: Long): List<Post> {
         val query = """
-            select id, title, user_id as userId, body from posts where user_id = :userId
+            select id, title, user_id as userId, body from posts where user_id = :1
         """.trimIndent()
 
         return jdbcClient.sql(query)
-            .param("userId", userId)
+            .param(1, userId)
             .query(Post::class.java)
             .list()
             .filterNotNull()
