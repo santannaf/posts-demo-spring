@@ -37,13 +37,10 @@ class PostsController(
 
     @GetMapping(path = ["/user/{userId}"])
     fun getPostsByUserId(@PathVariable userId: Long): Any {
-
         log.info("get all posts by user id: $userId")
-        return service.ping()
-
-//        val posts = service.getPostsByUserId(userId)
-//        log.info("fetch posts successfully: ${posts.size} - for user id: $userId")
-//        return posts
+        val posts = service.getPostsByUserId(userId)
+        log.info("fetch posts successfully: ${posts.size} - for user id: $userId")
+        return posts
     }
 }
 
