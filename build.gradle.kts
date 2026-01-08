@@ -65,8 +65,12 @@ dependencies {
 //    implementation("org.jetbrains.kotlin:kotlin-reflect")
 
     // Commons Libraries
-    runtimeOnly("com.oracle.database.jdbc:ojdbc11")
-    runtimeOnly("com.oracle.database.jdbc:ucp11")
+//    implementation("com.oracle.database.jdbc:ojdbc11:23.26.0.0.0")
+    implementation("com.oracle.database.jdbc:ojdbc11")
+//    runtimeOnly("com.oracle.database.jdbc:ojdbc11")
+//    runtimeOnly("com.oracle.database.jdbc:ucp11")
+//    implementation("com.oracle.database.jdbc:ucp:23.26.0.0.0")
+//    implementation("com.oracle.database.spring:oracle-spring-boot-starter-ucp:26.0.0")
 
     // Traces and Metrics
     implementation("io.opentelemetry.instrumentation:opentelemetry-spring-boot-starter")
@@ -122,7 +126,9 @@ graalvmNative {
             verbose.set(true)
             debug.set(true)
             configurationFileDirectories.from(file("src/main/resources/META-INF/native-image"))
-            buildArgs("--color=always", "-H:+AddAllCharsets")
+            buildArgs("--color=always", "-H:+AddAllCharsets",
+                "--initialize-at-run-time=oracle.jdbc.driver.OracleDriver",
+                "--initialize-at-run-time=oracle.jdbc.driver.T4CConnection")
         }
     }
 }
