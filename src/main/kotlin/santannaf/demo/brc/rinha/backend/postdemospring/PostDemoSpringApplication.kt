@@ -59,7 +59,7 @@ class PostsServiceImpl(
     private val customHttp = restClient.baseUrl("https://jsonplaceholder.typicode.com").build()
 
     private val insertSql = """
-        INSERT INTO POSTS (ID, TITLE, USER_ID, BODY)
+        INSERT INTO XYZ.POSTS (ID, TITLE, USER_ID, BODY)
         VALUES (:id, :title, :userId, :body)
     """.trimIndent()
 
@@ -119,7 +119,7 @@ class PostsServiceImpl(
 
     override fun getPostsByUserId(userId: Long): List<Post> {
         val query = """
-            select id, title, user_id as userId, body from posts where user_id = :1
+            select id, title, user_id as userId, body from xyz.posts where user_id = :1
         """.trimIndent()
 
         return jdbcClient.sql(query)
